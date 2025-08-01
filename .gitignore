@@ -8,3 +8,5 @@ wheels/
 
 # Virtual environments
 .venv
+# Diretórios
+data/xml_files

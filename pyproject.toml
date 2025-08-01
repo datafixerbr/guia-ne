@@ -4,4 +4,16 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "jupyter>=1.1.1",
+    "lxml>=6.0.0",
+    "matplotlib>=3.10.5",
+    "pandas>=2.3.1",
+    "seaborn>=0.13.2",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "isort>=6.0.1",
+]
