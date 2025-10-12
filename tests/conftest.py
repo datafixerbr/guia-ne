@@ -2,6 +2,10 @@
 Configuração de fixtures globais para testes
 """
 
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 import tempfile
 import zipfile
 from io import BytesIO
@@ -9,6 +13,13 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
+
+
+@pytest.fixture
+def temp_ssd_dir():
+    """Cria diretório temporário para simular o SSD"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        yield Path(temp_dir)
 
 
 @pytest.fixture
