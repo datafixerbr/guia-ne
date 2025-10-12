@@ -41,10 +41,10 @@ class StreamingZipProcessor:
         Args:
             ssd_path (str): Caminho do diretório do dispositivo SSD
         """
-        self.ssd_path = ssd_path
+        self.ssd_path = Path(ssd_path)
         self.logger = get_logger(__name__)
 
-        self.logger.info(f"StreamingZipProcessor inicializado = SSD {self.ssd_path}")
+        self.logger.info(f"StreamingZipProcessor inicializado - SSD: {self.ssd_path}")
 
     def stream_xml_files(self, zip_filename: str) -> Iterator[XMLFileStream]:
         """
