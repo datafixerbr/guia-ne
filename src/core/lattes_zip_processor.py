@@ -106,33 +106,108 @@ class StreamingZipProcessor:
             self.logger.error(f"Erro ao processar ZIP {zip_filename}: {str(e)}")
             raise ZipProcessingError(f"Erro na extração streaming: {str(e)}")
 
-    # def extract_xml_files_streaming(self, zip_filename: str) -> StreamExtractionResult:
-    #     """
-    #     Extrai informações sobre arquivos XML sem carregar o conteúdo.
+    def extract_xml_files_streaming(self, zip_filename: str) -> StreamExtractionResult:
+        """
+        Extrai informações sobre arquivos XML sem carregar o conteúdo.
 
-    #     Args:
-    #         zip_filename (str): Nomo do arquivo ZIP
+        Args:
+            zip_filename (str): Nomo do arquivo ZIP
 
-    #     Returns:
-    #         StreamExtractionResult com informações da extração
-    #     """
+        Returns:
+            StreamExtractionResult com informações da extração
+        """
 
-    #     reusult = StreamExtractionResult(
-    #         zip_filename=zip_filename, xml_files_found=0, success=False
-    #     )
+        result = StreamExtractionResult(
+            zip_filename=zip_filename, xml_files_found=0, success=False
+        )
 
-    #     try:
-    #         zip_path = Path(f"{self.ssd_path}/{zip_filename}")
+        try:
+            zip_path = Path(self.ssd_path) / zip_filename
 
-    #         if not zip_path.exists():
-    #             raise FileNotFoundError(f"Arquivo ZIP não encontrado: {zip_filename}")
+            if not zip_path.exists():
+                raise FileNotFoundError(f"Arquivo ZIP não encontrado: {zip_filename}")
 
-    #         with zipfile.ZipFile(zip_path, "r") as zip_ref:
-    #             xml_files = [
-    #                 info
-    #                 for info in zip_ref.infolist()
-    #                 if info.filename.endswith(".xml") and not info.is_dir()
-    #             ]
+            with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                # Contar arquivos XML
+                xml_files = [
+                    info
+                    for info in zip_ref.infolist()
+                    if info.filename.endswith(".xml") and not info.is_dir()
+                ]
 
-    #     except:
-    #         pass
+            result.xml_files_found = len(xml_files)
+            result.success = len(xml_files) > 0
+
+            if not result.success:
+                result.error_message = (
+                    f"Nenhum arquivo XML encontrado em {zip_filename}"
+                )
+
+        except Exception as e:
+            result.error_message = str(e)
+            self.logger.error(f"Erro na verificação de {zip_filename}: {str(e)}")
+
+        return result
+
+    def get_zip_metadata(self, zip_filename: str) -> Dict:
+        """
+        Obtém metadados do arquivo ZIP sem extrair conteúdo.
+
+        Args:
+            zip_filename: Nome do arquivo ZIP
+
+        Returns:
+            Dicionário com metadados
+        """
+        zip_path = self.ssd_path / zip_filename
+
+        if not zip_path.exists():
+            return {"error": f"Arquivo não encontrado: {zip_filename}"}
+
+        try:
+            metadata = {
+                "zip_filename": zip_filename,
+                "file_size": zip_path.stat().st_size,
+                "xml_files": [],
+                "total_xml_files": 0,
+                "total_uncompressed_size": 0,
+            }
+
+            with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                for info in zip_ref.infolist():
+                    if info.filename.endswith(".xml") and not info.is_dir():
+                        metadata["xml_files"].append(
+                            {
+                                "filename": info.filename,
+                                "compressed_size": info.compress_size,
+                                "uncompressed_size": info.file_size,
+                                "compression_ratio": (
+                                    (1 - info.compress_size / info.file_size) * 100
+                                    if info.file_size > 0
+                                    else 0
+                                ),
+                            }
+                        )
+                        metadata["total_uncompressed_size"] += info.file_size
+
+                metadata["total_xml_files"] = len(metadata["xml_files"])
+
+            return metadata
+
+        except Exception as e:
+            return {"error": str(e)}
+
+    def get_zip_files_list(self) -> List[str]:
+        """
+        Retorna lista de arquivos ZIP disponíveis no diretório SSD.
+
+        Returns:
+            Lista de nomes de arquivos ZIP
+        """
+        try:
+            zip_files = [f.name for f in self.ssd_path.glob("*.zip")]
+            self.logger.info(f"Encontrados {len(zip_files)} arquivos ZIP")
+            return zip_files
+        except Exception as e:
+            self.logger.error(f"Erro ao listar arquivos ZIP: {str(e)}")
+            return []
