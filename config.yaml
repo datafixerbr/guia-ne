@@ -1,0 +1,15 @@
+oci:
+  config_path: ${OCI_CONFIG_PATH}
+  namespace: ${OCI_NAMESPACE}
+  bucket_name: ${OCI_BUCKET_NAME}
+  compartment_id: ${OCI_COMPARTMENT_ID}
+
+processing:
+  ssd_path: ${SSD_PATH}
+  temp_directory: ${TEMP_DIR}
+  batch_size: 500
+  max_workers: 8
+
+logging:
+  level: ${LOG_LEVEL}
+  file: ${LOG_FILE}
