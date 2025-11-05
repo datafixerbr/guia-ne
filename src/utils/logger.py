@@ -1,46 +1,56 @@
+"""
+Módulo de configuração de logging.
+"""
+
 import logging
 import sys
-from typing import Any, Dict, Optional
-
-from pythonjsonlogger.json import JsonFormatter
-
-
-class Logger:
-    """Logger estruturado para os pipelines de dados"""
-
-    def __init__(self, name: str, level: str = "INFO") -> None:
-        self.logger = logging.getLogger(name)
-        self.logger.setLevel(getattr(logging, level.upper()))
-
-        if not self.logger.handlers:
-            self._setup_handler()
-
-    def _setup_handler(
-        self,
-    ):
-        """Configura handler com forato JSON"""
-        handler = logging.StreamHandler(sys.stdout)
-        formatter = JsonFormatter("%(asctime)s %(name)s %(levelname)s %(message)s")
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-
-    def info(self, message: str, extra: Optional[Dict[str, Any]] = None):
-        """Log de informação"""
-        self.logger.info(message, extra=extra or {})
-
-    def error(self, message: str, extra: Optional[Dict[str, Any]] = None):
-        """Log de erro"""
-        self.logger.error(message, extra=extra or {})
-
-    def warning(self, message: str, extra: Optional[Dict[str, Any]] = None):
-        """Log de erro"""
-        self.logger.warning(message, extra=extra or {})
-
-    def debug(self, message: str, extra: Optional[Dict[str, Any]] = None):
-        """Log de debug"""
-        self.logger.debug(message, extra=extra or {})
+from pathlib import Path
+from typing import Optional
 
 
-def get_logger(name: str) -> Logger:
-    """Factory para crição de logs estruturados"""
-    return Logger(name)
+def setup_logging(
+    log_level: str = "INFO",
+    log_file: Optional[str] = None,
+    log_format: Optional[str] = None,
+) -> None:
+    """
+    Configura o sistema de logging.
+
+    Args:
+        log_level: Nível de logging (DEBUG, INFO, WARNING, ERROR)
+        log_file: Arquivo de log (opcional)
+        log_format: Formato das mensagens de log
+    """
+    if log_format is None:
+        log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+    # Configurar nível de logging
+    level = getattr(logging, log_level.upper(), logging.INFO)
+
+    # Configurar handlers
+    handlers = [logging.StreamHandler(sys.stdout)]
+
+    if log_file:
+        log_path = Path(log_file)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        handlers.append(logging.FileHandler(log_file, encoding="utf-8"))
+
+    # Configurar logging básico
+    logging.basicConfig(level=level, format=log_format, handlers=handlers, force=True)
+
+    # Configurar loggers de bibliotecas externas
+    logging.getLogger("oci").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+
+def get_logger(name: str) -> logging.Logger:
+    """
+    Retorna logger configurado.
+
+    Args:
+        name: Nome do logger
+
+    Returns:
+        Logger configurado
+    """
+    return logging.getLogger(name)
