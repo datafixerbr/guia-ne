@@ -8,8 +8,8 @@ from io import BytesIO
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional
 
-from utils.exceptions import ZipProcessingError
-from utils.logger import get_logger
+from src.utils.exceptions import ZipProcessingError
+from src.utils.logger import get_logger
 
 
 @dataclass
