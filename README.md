@@ -1,155 +1,124 @@
-# Análise Estatística de Currículos Lattes
+# Guia Nordeste de Fontes Jornalísticas 🌵📊
 
-## Visão Geral
+O **Guia Nordeste de Fontes Jornalísticas** é uma iniciativa do projeto
+de extensão **O Moderno Popular**, realizado pelo **Observatório da Vida
+Agreste (OVA)** da **Universidade Federal de Pernambuco (UFPE)**.
 
-Este projeto implementa uma metodologia estatisticamente robusta para análise de uma base de dados massiva de currículos Lattes (7,3 milhões de arquivos), utilizando amostragem representativa ao invés de processamento completo da população. A abordagem reduz drasticamente o tempo de processamento (de dias para minutos) mantendo 95% de confiança estatística.
+Este repositório contém a infraestrutura de dados responsável por
+extrair, tratar e categorizar informações de pesquisadores das
+universidades públicas federais nordestinas, combatendo a
+sub-representação da região na mídia nacional.
 
-## 📊 Metodologia Estatística
+## 📑 Sumário
 
-### Cálculo da Amostra Representativa
+-   Contexto e Justificativa\
+-   Objetivos do Projeto\
+-   Arquitetura de Dados\
+-   Tecnologias Utilizadas\
+-   Como Executar\
+-   Impacto Social e ODS\
+-   Créditos e Realização\
+-   Contribuição
 
-Utilizamos a **Fórmula de Cochran** ajustada para população finita:
+## 🔍 Contexto e Justificativa
 
-```
-n₀ = (Z² × p × (1-p)) / e²
-n = n₀ / (1 + ((n₀ - 1) / N))
-```
+Historicamente, o Nordeste brasileiro é retratado pela mídia comercial
+sob estereótipos de "tradicionalismo" ou "terra de carências", excluindo
+os profissionais da região do lugar da racionalidade e da expertise
+técnica.
 
-**Onde:**
+Pesquisas indicam que apenas **12% das fontes utilizadas por jornalistas
+no Twitter** (frequentemente usado como banco de fontes) estão
+localizadas nas regiões Norte e Nordeste.\
+Este projeto visa romper essa barreira, fornecendo um banco de dados
+robusto de especialistas localizados tanto nas capitais quanto no
+interior do Nordeste.
 
-- `Z = 1,96` (95% de confiança)
-- `p = 0,5` (proporção conservadora)
-- `e = 0,05` (±5% margem de erro)
-- `N = 7.391.139` (população total)
+## 🎯 Objetivos do Projeto
 
-**Resultado:** 500 arquivos representam estatisticamente toda a base com 95% de confiança.
+-   **Visibilização:** Catalogar especialistas das áreas de saúde,
+    comunicação, arte, tecnologia e ciências humanas/sociais das UFs
+    nordestinas.\
+-   **Diversidade:** Priorizar o levantamento de dados sobre raça,
+    gênero, território e pessoas com deficiência (PCDs) para promover
+    uma pluralidade real de vozes.\
+-   **Democratização:** Facilitar o acesso de jornalistas, ONGs e
+    pesquisadores à produção científica de excelência do Nordeste.
 
-### Método de Amostragem
+## 🏗 Arquitetura de Dados
 
-- **Amostragem sistemática** com ponto de partida aleatório
-- **Seed fixa (42)** para reprodutibilidade
-- **Intervalo:** 14.782 (N/n)
-- **Representatividade:** 0,007% da população total
+O pipeline de dados deste repositório segue a lógica de extração da
+**Plataforma Lattes** para identificar o perfil dos docentes
+pesquisadores:
 
-## 🛠️ Estrutura do Projeto
+-   **Extração (ETL):** Scripts para coleta automatizada de dados
+    públicos de pesquisadores vinculados às instituições nordestinas.\
+-   **Transformação:** Limpeza de dados, normalização de áreas de
+    atuação e enriquecimento com informações coletadas via formulários
+    suplementares.\
+-   **Categorização:** Agrupamento por especialidades e subáreas de
+    interesse para facilitar a busca jornalística.
 
-```
-projeto/
-├── data/
-│   ├── lattes_amostra_metadata.csv      # Metadados da amostra (485 registros)
-│   ├── arquivos_amostra.txt             # Lista dos arquivos selecionados
-│   ├── xml_files/                       # XMLs extraídos organizados por ZIP
-│   └── amostragem_lattes.log            # Log do processamento
-├── extrator.py                          # Script de amostragem e metadados
-├── motor_metadados.py                   # Script de extração de XMLs
-└── nbs                                  # Diretório para Notebook de análise
-    └── cnpq_lattes_discovery.ipynb      # Notebook de análise dos metadados
-```
+## 🛠 Tecnologias Utilizadas
 
-## 🚀 Scripts Principais
+-   **Python:** Linguagem principal para o processamento de dados.\
+-   **Pandas / Polars:** Manipulação e análise de grandes volumes de
+    dados de pesquisadores.\
+-   **BeautifulSoup / Selenium:** (Se aplicável) Extração de metadados
+    de portais institucionais e Lattes.\
+-   **GitHub Actions:** Automação do pipeline de atualização.
 
-1. `motor_metadados.py` - Gerador de Metadados da Amostra
+## 🚀 Como Executar
 
-    Funcionalidades
+> **Nota:** Ajuste os comandos conforme a estrutura real do seu
+> repositório.
 
-    - Calcula amostra estatisticamente representativa
-    - Extrai metadados de estrutura dos XMLs
-    - Monitora recursos do sistema
-    - Sistema de checkpoint para recuperação
+### Clone o repositório
 
-2. `extrator.py` - Extrator de XMLs da Amostra
-
-    Funcionalidades:
-
-    - Extrai arquivos XML apenas da amostra selecionada
-    - Organiza em subdiretórios por arquivo ZIP
-    - Processa de forma eficiente e segura
-
-## 📈 Análise Exploratória
-
-### Dados Coletados
-
-O dataset `lattes_amostra_metadata.csv` contém:
-
-| Campo | Descrição |
-| :-- | :-- |
-| `arquivo_zip` | Nome do arquivo ZIP |
-| `xml_arquivo` | Nome do arquivo XML |
-| `linhas` | Número de linhas do currículo |
-| `colunas` | Número de campos preenchidos |
-| `zip_tamanho_mb` | Tamanho do arquivo comprimido |
-| `xml_tamanho_kb` | Tamanho do XML descomprimido |
-| `encoding_detectado` | Codificação do arquivo |
-| `elementos_xml_raiz` | Elemento raiz da estrutura XML |
-| `status` | Status do processamento |
-
-### Indicadores Principais Identificados
-
-**Qualidade dos Dados:**
-
-- 99,79% de taxa de sucesso no processamento
-- Estrutura XML consistente (CURRICULO-VITAE)
-- Encoding predominante: ISO-8859-1
-
-**Padrões Temporais:**
-
-- Concentração de atualizações em julho
-- Maior atividade em dias úteis
-- Padrão reativo de atualização
-
-**Estrutura dos Currículos:**
-
-- 83% dos currículos têm 5 linhas (estrutura padrão)
-- Média de 20 campos preenchidos por currículo
-- Variação de 14 a 37 campos por registro
-
-## 🔧 Requisitos e Instalação
-
-### Dependências
-
-```bash
-pip install pandas numpy matplotlib seaborn psutil
+``` bash
+git clone https://github.com/datafixerbr/guia-ne.git
 ```
 
-## 📊 Resultados Estatísticos
+### Instale as dependências
 
-### Projeções para População Total
+``` bash
+pip install -r requirements.txt
+```
 
-Com base na amostra de 485 registros válidos:
+### Execute o script de extração
 
-| Métrica | Valor Projetado |
-| :-- | :-- |
-| Currículos processáveis | ~7.360.000 |
-| Total de linhas estimadas | ~31.000.000 |
-| Campos médios por currículo | 20,1 |
-| Espaço total estimado | ~55 GB |
-| Taxa de processamento | 99,8% |
+``` bash
+python src/extraction/lattes_crawler.py
+```
 
-**Intervalo de Confiança:** 95% ± 5%
+## 🌍 Impacto Social e ODS
 
-## ⚠️ Limitações e Considerações
+O Guia está alinhado com quatro **Objetivos de Desenvolvimento
+Sustentável (ODS)** da ONU:
 
-### Limitações da Amostra
+-   **ODS 4 --- Educação de Qualidade:** Valorização das universidades
+    federais.\
+-   **ODS 5 --- Igualdade de Gênero:** Visibilidade para pesquisadoras.\
+-   **ODS 10 --- Redução das Desigualdades:** Combate ao elitismo
+    regional (eixo Sul--Sudeste).\
+-   **ODS 16 --- Paz, Justiça e Instituições Eficazes:** Fortalecimento
+    de um ambiente democrático e menos xenófobo.
 
-- **Eventos raros** (<0,1%) podem não ser capturados
-- **Análises muito específicas** de subgrupos pequenos
-- **Sazonalidade** concentrada em julho de 2024
+## 👥 Créditos e Realização
 
-## 📚 Referências Metodológicas
+O projeto é coordenado pela **professora Fabiana Moraes da Silva** no
+âmbito do **Observatório da Vida Agreste (OVA)** e do curso de
+**Comunicação Social da UFPE**.
 
-- **Cochran, W.G.** (1977). *Sampling Techniques*. 3rd Edition, John Wiley \& Sons
-- **Lohr, S.L.** (2010). *Sampling: Design and Analysis*. 2nd Edition, Brooks/Cole
-- Metodologia aplicada em grandes bases de dados do IBGE e censos internacionais
+-   **Parceria:** Coletivo jornalístico *Marco Zero Conteúdo*.\
+-   **Homenagem:** Inspirado pelo projeto *Entreviste um Negro*, de
+    Helaine Martins.
 
-## 🤝 Contribuições
+## 🤝 Contribuição
 
-Para melhorias no projeto:
-
-1. **Validação cruzada** com diferentes sementes
-2. **Amostragem estratificada** por área de conhecimento
-3. **Análise temporal** em diferentes períodos
-4. **Otimizações de performance** para hardware específico
-
-<div style="text-align: center">⁂</div>
+Sinta-se à vontade para abrir uma **issue** ou enviar um **pull
+request**.\
+Como produzimos ciência nacional, sua colaboração ajuda a universalizar
+o conhecimento produzido no Nordeste.
 
 
